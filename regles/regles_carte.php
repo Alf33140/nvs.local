@@ -1,0 +1,100 @@
+<html>
+	<head>
+		<title>Nord VS Sud</title>
+		
+		<!-- Required meta tags -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	</head>
+
+	<body style="background-color:grey;">
+
+		<div class="container-fluid">
+		
+			<?php require 'regles_header.php' ?>
+			
+			<div class="row justify-content-center">
+				<div class="col-12">
+	
+					<div align="center"><h2>La carte et les terrains</h2></div>
+					
+				</div>
+			</div>
+			
+			<div class="row">
+				<div class="col-12">
+					<h2>La Carte</h2>
+					<p>La Carte est le lieu des opérations. La carte est parsemée de couleurs qui correspondent à des terrains, mais aussi de petits carrés (les personnages, les PNJ ect... ) et de gros carrés qui sont des bâtiments.</p>
+
+					<p>Les couleurs sont les suivantes :
+						<ul>
+							<li>En bleu, les Nordistes et bâtiments Nordistes</li>
+							<li>En rouge, les Sudistes et bâtiments Sudistes</li>
+							<li>En noir, les PNJs</li>
+							<li>En gris, les rails, les ponts les barricades.</li>
+						</ul>
+					</p>
+
+					<p>Il est intéressant de noter que les unités combattantes situées en forêt sont invisibles sur la carte générale. Il s'agit là, d'un moyen d'effectuer des actions furtives.</p> 
+					
+					<h2>Les Terrains</h2>
+					<p>Il existe de nombreux terrains qui ont tous leurs spécificités. Certains terrains sont plus difficiles d'accès, d'autres sont particulièrement invivables ou sont limités quant aux possibilités de défenses offertes.<br />
+					Il y a plusieurs types de terrains différents, ayant tous : un coût de déplacement (PM ), un modificateur de récupération, un modificateur de perception, un modificateur de défense à distance, un modificateur de défense au corps à corps.</p>
+				
+					<div id="table_terrain" class="table-responsive">
+						<table border='1' align="center" width=100%>
+							<tr>
+								<th style="text-align:center">case</th><th style="text-align:center">nom</th><th style="text-align:center">coût PM</th><th style="text-align:center">Défense à distance (1)</th><th style="text-align:center">Défense au CàC</th><th style="text-align:center">Bonus portée armes à distance (2)</th><th style="text-align:center">Perception</th><th style="text-align:center">Récupération</th>
+							</tr>
+							<tr>
+								<td align='center'><img src='../fond_carte/1.gif' /></td><td align='center'>Plaine</td><td align='center'>1</td><td align='center'> - </td><td align='center'> - </td><td align='center'> - </td><td align='center'> - </td><td align='center'> - </td>
+							</tr>
+							<tr>
+								<td align='center'><img src='../fond_carte/2.gif' /></td><td align='center'>Coline</td><td align='center'>2</td><td align='center'>+10%</td><td align='center'>+10%</td><td align='center'> +1 </td><td align='center'>+1</td><td align='center'> - </td>
+							</tr>
+							<tr>
+								<td align='center'><img src='../fond_carte/3.gif' /></td><td align='center'>Montagne</td><td align='center'>4</td><td align='center'>+20%</td><td align='center'>+20%</td><td align='center'> +2 </td><td align='center'>+2</td><td align='center'> - </td>
+							</tr>
+							<tr>
+								<td align='center'><img src='../fond_carte/4.gif' /></td><td align='center'>Desert</td><td align='center'>1</td><td align='center'>-10%</td><td align='center'>-10%</td><td align='center'> - </td><td align='center'> - </td><td align='center'>-100</td>
+							</tr>
+							<tr>
+								<td align='center'><img src='../fond_carte/6.gif' /></td><td align='center'>Marécage</td><td align='center'>2</td><td align='center'> - </td><td align='center'>-10%</td><td align='center'> - </td><td align='center'> - </td><td align='center'>-20</td>
+							</tr>
+							<tr>
+								<td align='center'><img src='../fond_carte/7.gif' /></td><td align='center'>Forêt</td><td align='center'>2</td><td align='center'>+20%</td><td align='center'> - </td><td align='center'> - </td><td align='center'>-2</td><td align='center'> - </td>
+							</tr>
+							<tr>
+								<td align='center'><img src='../fond_carte/8.gif' /></td><td align='center'>Eau / Rivière</td><td align='center'>4</td><td align='center'>+10%</td><td align='center'>+10%</td><td align='center'> - </td><td align='center'> - </td><td align='center'> - </td>
+							</tr>
+							<tr>
+								<td align='center'><img src='../fond_carte/9.gif' /></td><td align='center'>Eau profonde</td><td align='center'>Infranchissable</td><td align='center'> - </td><td align='center'> - </td><td align='center'> - </td><td align='center'> - </td><td align='center'> - </td>
+							</tr>
+						</table>
+					</div>
+
+					<p><b>(1) Se référer à cette colonne lorsqu'on attaque avec une arme pour les attaques à distance (exemple : pistolet, fusil, etc..), même si l'attaque se fait au contact.</b></p>
+					<p><b>(2) Le malus de précision pour les attaques à 4 cases et plus ne s'applique pas si la portée hors bonus de l'arme n'est pas de minimum 4.</b></p>
+
+					<h2>Les Points Stratégiques</h2>
+					<p>Sur la carte, il y a des points stratégiques répartis à différents endroits, symbolisés par des étoiles sur la carte quand ils ont été repérés. Ce sont des bâtiments indestructibles et capturables. Lorsqu'un camp capture un point stratégique, il peut gagner des points de victoire.</p>
+					<p>Le nombre de points stratégiques varie d'une carte à l'autre.</p>
+					<p>Le camp qui contrôle le plus grand nombre de points stratégiques remporte N points de victoire chaque jour, selon la formule : N = abs (PS nord - PS sud).</p>
+					<p>Si le Nord en possède 3 et le Sud en possède 2, alors le Nord remporte 1 point victoire par jour (3-2=1).<br />
+					Si le Sud en possède 4 et le Nord en possède 0, alors le Sud remporte 4 points de victoire par jour (4-0=4).</p>
+					
+				</div>
+			</div>
+		
+		</div>
+		
+		<!-- Optional JavaScript -->
+		<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	</body>
+</html>

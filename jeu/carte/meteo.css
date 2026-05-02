@@ -1,0 +1,60 @@
+/* Structure de l'overlay */
+#weather-overlay {
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: none;
+}
+
+/* Classe pour les sprites des unités pour qu'elles passent au-dessus du brouillard */
+    .unite-sprite {
+        position: relative;
+        z-index: 9999 !important;
+        box-shadow: 0 0 40px 10px rgba(240, 240, 240, 0.9) inset;
+        border-radius: 5px;
+}
+
+    .brouillard-actif {
+        display: block !important;
+        background-color: rgba(240, 240, 240, 0.95) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+
+
+
+    /* 1. RÉGLAGE DE LA COULEUR : Blanc cassé très opaque */
+    /* Le 0.95 signifie qu'il est opaque à 95% (on ne voit presque plus rien derrière) */
+    background-color: rgba(240, 240, 240, 0.95) !important;
+
+    /* Sécurité : Pas de flou matériel pour ne pas gêner le masque */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+
+    /* Priorité d'affichage élevée */
+    z-index: 1000;
+}
+
+/* Style de la Pluie */
+.meteo-pluie {
+    background-image: url('../fond_carte/rain.gif');
+    background-repeat: repeat;
+    opacity: 0.4;
+    display: block !important;
+}
+
+/* Style de l'Orage */
+.meteo-orage {
+    display: block !important;
+    background: rgba(50, 50, 100, 0.2);
+    animation: lightning 4s infinite;
+}
+
+@keyframes lightning {
+    0%, 95%, 100% { background-color: rgba(50, 50, 100, 0.2); }
+    97% { background-color: rgba(255, 255, 255, 0.5); }
+    98% { background-color: rgba(50, 50, 100, 0.2); }
+}
