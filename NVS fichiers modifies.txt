@@ -1,0 +1,64 @@
+mise a jour de l horloge sur tte les pages alors qu elle n est utile que sur la page de jeu
+public/js/app.js
+
+optimisation de la console anim:
+rajout de code et bootstrap sur:
+
+anim_batiment (Entrepot et 3 bâtiments ressources)
+anim_capture_rp (tableau et requete pour verifier en auto la capture par encerclement)
+anim_compagnie
+anim_creer_batiment (ajout de la creation entrepot et 3 bâtiments ressources)
+anim decoration 
+anim gestion meteo productio des evenements meteo aléatoires
+anim_info_meteo
+anim_missions (bootstraps)
+anim penitencier (refonte incarceration,et relache , fusion avec anim_punition: "bureau du marchall")
+anim perso
+anim_trains refonte de la gestion des liaisons ,trains et badges d etat du train
+animation (bootstrap)
+admin_compagnies creation de la requete "changer de poste" un perso d une cie
+recrutement (rajout de l unite 9 "chariot")
+message_lire (nettoyage et securité verif message precedent et message suivant acceptant une valeur nulle sans erreur)
+grades.php: rajout des  grades des grouillots
+jouer_br
+rajout du bloc meteo - jour/nuit et cycle saisons
+affichage ds le tableau caractéristiques 
+malus perception nuit qui diminue de 2 la perception des unites la nuit
+insertion nouveaux bâtiments (bloc nouveaux bâtiments avec affichage tuiles)
+rajout carriere grouillots paramétrée ds grades.php
+
+ajouts ds /jeu:
+get_cycle_etat gestion des cycles meteo
+meteo.php
+cron_meteo permet le lancement manuel des evenements meteo
+
+champs rajoutés en base
+table meteo:
+	CREATE TABLE `meteo` (
+  		`id_meteo` int(11) NOT NULL AUTO_INCREMENT,
+  		`type_meteo` varchar(100) NOT NULL,
+  		`x_center` int(11) NOT NULL,
+  		`y_center` int(11) NOT NULL,
+ 		`rayon` int(11) NOT NULL,
+  		`date_debut` datetime NOT NULL,
+  		`date_fin` datetime NOT NULL,
+  		`malus_perception` int(11) NOT NULL,
+  		`malus_pm` int(11) NOT NULL,
+  		`malus_pa` int(11) NOT NULL,
+
+  		PRIMARY KEY (`id_meteo`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ds table perso:
+	compteur_PA
+	compteur_pm
+	ALTER TABLE perso ADD COLUMN compteur_pm DECIMAL(8,4) DEFAULT 0.0000;
+	ALTER TABLE perso ADD COLUMN compteur_pa DECIMAL(8,4) NOT NULL DEFAULT 0 AFTER compteur_pm;
+
+recreer table ressources_entrepot:
+	CREATE TABLE `ressources_entrepot` (
+
+    		`id_instance_bat` INT(11) NOT NULL PRIMARY KEY,
+    		`stock_or` INT(11) NOT NULL,
+    		`stock_bois` INT(11) DEFAULT NULL,
+    		`stock_fer` INT(11) DEFAULT NULL;
