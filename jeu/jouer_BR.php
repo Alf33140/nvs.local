@@ -2574,7 +2574,8 @@ if($dispo == '1' || $admin){
 					$perc_att = 1;
 				}
 				$res_portee_cac = resource_liste_cibles_a_portee_attaque($mysqli, 'carte', $id_perso, $porteeMin_arme_cac, $porteeMax_arme_cac, $perc_att, 'cac');
-
+				$targets_cac = $res_portee_cac->fetch_all(MYSQLI_ASSOC);
+				
 				// Récupération de l'arme à distance sur le perso
 				$sql = "SELECT arme.id_arme, nom_arme, porteeMin_arme, porteeMax_arme, coutPa_arme, degatMin_arme, valeur_des_arme, precision_arme, degatZone_arme, building_damage
 						FROM arme, perso_as_arme
@@ -2612,7 +2613,8 @@ if($dispo == '1' || $admin){
 
 				// Récupération de la liste des persos à portée d'attaque arme dist
 				$res_portee_dist = resource_liste_cibles_a_portee_attaque($mysqli, 'carte', $id_perso, $porteeMin_arme_dist, $porteeMax_arme_dist, $perc_att, 'dist');
-				
+				$targets_dist = $res_portee_dist->fetch_all(MYSQLI_ASSOC);
+
 				//<!--Génération de la carte-->
 				$perc_carte = $perc;
 				if ($perc_carte < 0) {
@@ -2863,7 +2865,7 @@ if($dispo == '1' || $admin){
 						<li class="nav-item my-2 dropdown">
 							<a class="dropdown-toggle btn btn-lg btn-info w-100" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 me-1 align-text-top">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+									<path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
 								</svg>
 								Aide
 							</a>
@@ -2872,20 +2874,15 @@ if($dispo == '1' || $admin){
 								<li><a class="dropdown-item" href="?action=faq">FAQ</a></li>
 								<li><a class="dropdown-item" href="question_anim.php">Questions aux anims</a></li>
 								<li><hr class="dropdown-divider"></li>
-								<li><a class="dropdown-item" href="https://discord.gg/EMqRMzHKjZ">DISCORD du jeu</a></li>
+								<li><a class="dropdown-item" href="https://discord.gg/JTYKxfdJ6B">DISCORD du jeu</a></li>
 							</ul>
 						</li>
 						<li class="nav-item my-2 dropdown">
-							<a class="dropdown-toggle btn btn-lg btn-primary w-100" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 me-1 align-text-top">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
-								</svg>
-								Communauté
+							<a class="btn btn-lg w-100 fw-semibold text-light" href="https://discord.gg/JTYKxfdJ6B" style='background:#5865F2'>
+								<img class="img-fluid size-8" src="../public/img/icons/Discord-Symbol-White.png" alt="Discord">
+								DISCORD du jeu
 							</a>
-							<ul class="dropdown-menu w-100">
-								<li><a class="dropdown-item disabled" href="#" disabled>Forum</a></li>
-								<li><a class="dropdown-item" href="https://discord.gg/EMqRMzHKjZ">DISCORD du jeu</a></li>
-							</ul>
+							
 						</li>
 						<li class="nav-item my-2 d-none">
 							<a class='btn btn-lg btn-primary w-100' href="capture.php">Déclarer une capture</a>
@@ -3019,15 +3016,15 @@ if($dispo == '1' || $admin){
 			</nav>
 		</header>
 		<main class='container-fluid main-page overflow-scroll'>
-			<div class="row">
+			<div class="row flex-nowrap">
 				<!-- interface joueur -->
-				<div class='col-12 col-md-6 col-lg-2 bg-body-tertiary bg-main p-3'>
+				<div class='col-12 col-md-6 col-lg-3 col-xl-2 bg-body-tertiary bg-main p-3'>
 					<div class='row'>
 						<div class='col-2'>
 							<div class="position-relative icon-character">
-								<button type="button" class="btn btn-sm btn-secondary position-absolute top-0 start-100 translate-middle p-0 rounded-circle" data-bs-toggle="collapse" data-bs-target="#collapseInfoCharac" aria-expanded="false" aria-controls="collapseInfoCharac">
+								<button type="button" class="btn btn-sm btn-primary position-absolute top-0 start-100 translate-middle p-0 rounded-circle" data-bs-toggle="collapse" data-bs-target="#collapseInfoCharac" aria-expanded="false" aria-controls="collapseInfoCharac">
 									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+										<path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
 									</svg>
 								</button>
 								<span class='fw-bold position-absolute top-50 ms-1'><?= $id_perso ?></span>
@@ -3318,7 +3315,7 @@ if($dispo == '1' || $admin){
 													<option value="personne">Qui ?</option>
 													<?php
 													if ($combat_type == 'heal') {
-														while($t_cible_portee_cac = $res_portee_cac->fetch_assoc()) {
+														foreach($targets_cac as $t_cible_portee_cac){
 
 															$id_cible_cac = $t_cible_portee_cac["idPerso_carte"];
 
@@ -3373,7 +3370,7 @@ if($dispo == '1' || $admin){
 														// Impossible d'attaquer au CaC quand on est dans un train
 														if (!in_train($mysqli, $id_perso)) {
 
-															while($t_cible_portee_cac = $res_portee_cac->fetch_assoc()) {
+															foreach($targets_cac as $t_cible_portee_cac){
 
 																$id_cible_cac = $t_cible_portee_cac["idPerso_carte"];
 
@@ -3478,7 +3475,7 @@ if($dispo == '1' || $admin){
 													<option value="personne">Qui ?</option>
 													<?php
 													if (!isset($id_bat_perso) || (isset($id_bat_perso) && $id_bat_perso != 10)) {
-														while($t_cible_portee_dist = $res_portee_dist->fetch_assoc()) {
+														foreach($targets_dist as $t_cible_portee_dist){
 
 															$id_cible_dist = $t_cible_portee_dist["idPerso_carte"];
 															$id_instance_in_bat = in_bat($mysqli,$id_perso);
@@ -3585,8 +3582,8 @@ if($dispo == '1' || $admin){
 												<select name='id_attaque_cac2'>
 													<option value="personne">Qui ?</option>
 													<?php 
-													$res_portee_cac2 = resource_liste_cibles_a_portee_attaque($mysqli, 'carte', $id_perso, $porteeMin_arme_cac, $porteeMax_arme_cac, $perc_att, 'cac');
-													while($t_cible_portee_cac = $res_portee_cac2->fetch_assoc()) {
+													
+													foreach($targets_cac as $t_cible_portee_cac){
 
 														$id_cible_cac = $t_cible_portee_cac["idPerso_carte"];
 
@@ -3773,7 +3770,7 @@ if($dispo == '1' || $admin){
 								</div>
 							</div>
 							<div class='col-12'>
-								<!-- Actions de combat -->
+								<!-- Actions de combat petits écrans -->
 								<button class="btn btn-primary w-100 mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCombatActions" aria-expanded="false" aria-controls="collapseCombatActions">
 									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672 13.684 16.6m0 0-2.51 2.225.569-9.47 5.227 7.917-3.286-.672ZM12 2.25V4.5m5.834.166-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243-1.59-1.59" />
@@ -3839,7 +3836,7 @@ if($dispo == '1' || $admin){
 																<option value="personne">Qui ?</option>
 																<?php
 																if ($combat_type == 'heal') {
-																	while($t_cible_portee_cac = $res_portee_cac->fetch_assoc()) {
+																	foreach($targets_dist as $t_cible_portee_dist){
 
 																		$id_cible_cac = $t_cible_portee_cac["idPerso_carte"];
 
@@ -3894,7 +3891,7 @@ if($dispo == '1' || $admin){
 																	// Impossible d'attaquer au CaC quand on est dans un train
 																	if (!in_train($mysqli, $id_perso)) {
 
-																		while($t_cible_portee_cac = $res_portee_cac->fetch_assoc()) {
+																		foreach($targets_cac as $t_cible_portee_cac){
 
 																			$id_cible_cac = $t_cible_portee_cac["idPerso_carte"];
 
@@ -3999,7 +3996,7 @@ if($dispo == '1' || $admin){
 																<option value="personne">Qui ?</option>
 																<?php
 																if (!isset($id_bat_perso) || (isset($id_bat_perso) && $id_bat_perso != 10)) {
-																	while($t_cible_portee_dist = $res_portee_dist->fetch_assoc()) {
+																	foreach($targets_dist as $t_cible_portee_dist){
 
 																		$id_cible_dist = $t_cible_portee_dist["idPerso_carte"];
 																		$id_instance_in_bat = in_bat($mysqli,$id_perso);
@@ -4106,9 +4103,7 @@ if($dispo == '1' || $admin){
 															<select name='id_attaque_cac2'>
 																<option value="personne">Qui ?</option>
 																<?php 
-																$res_portee_cac2 = resource_liste_cibles_a_portee_attaque($mysqli, 'carte', $id_perso, $porteeMin_arme_cac, $porteeMax_arme_cac, $perc_att, 'cac');
-																while($t_cible_portee_cac = $res_portee_cac2->fetch_assoc()) {
-
+																foreach($targets_cac as $t_cible_portee_cac){
 																	$id_cible_cac = $t_cible_portee_cac["idPerso_carte"];
 
 																	if ($id_cible_cac < 50000) {
@@ -4359,7 +4354,7 @@ if($dispo == '1' || $admin){
 						</div>
 					</div>
 				</div>
-				<div class='col col-md-6 col-lg-10'>
+				<<div class='col col-md-6 col-lg-9 col-xl-10'>
 					<?php if (!empty($itemsOnMap)):?>
 					<div class='row bg-body-tertiary bg-main'>
 						<div class='col-6 m-auto mt-2'>
