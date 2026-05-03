@@ -21,8 +21,8 @@ if(isset($_SESSION["id_perso"])){
 	$admin = admin_perso($mysqli, $_SESSION["id_perso"]);
 
 	if($dispo == '1' || $admin){
-		
-		//recuperation des varaibles de sessions
+
+		//recuperation des variables de sessions
 		$id = $_SESSION["id_perso"];
 		
 		$sql = "SELECT pv_perso FROM perso WHERE id_perso='$id'";
@@ -363,7 +363,7 @@ if(isset($_SESSION["id_perso"])){
 						WHERE perso.ID_perso=perso_in_compagnie.id_perso AND id_compagnie=$id_compagnie AND attenteValidation_compagnie='2'";
 				$res = $mysqli->query($sql);
 				$num_q = $res->num_rows;
-				
+
 				// il y a des persos en attente de validation pour quitter la compagnie
 				if($num_q) { 
 				

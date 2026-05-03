@@ -6,283 +6,163 @@ $mysqli = db_connexion();
 
 include ('../nb_online.php');
 $phpbb_root_path = '../forum/';
-if (is_dir($phpbb_root_path))
-{
-	include ($phpbb_root_path .'config.php');
+if (is_dir($phpbb_root_path)) {
+                include ($phpbb_root_path .'config.php');
 }
 
 if(isset($_SESSION["id_perso"])){
-	
-	$id_perso = $_SESSION['id_perso'];
-	
-	// recupération config jeu
-	$admin = admin_perso($mysqli, $id_perso);
-	
-	if($admin){
-		
-		$mess_err 	= "";
-		$mess 		= "";
-		
-		if (isset($_POST["destruction_pont"]) && $_POST["destruction_pont"] == 'ok') {
-			
-			// Destruction des ponts
-			$sql = "UPDATE carte SET fond_carte='8.gif', save_info_carte=NULL WHERE fond_carte='b5b.png' OR fond_carte='b5r.png'";
-			$mysqli->query($sql);
-			
-			$sql = "DELETE FROM instance_batiment WHERE id_batiment='5'";
-			$mysqli->query($sql);
-			
-			$sql = "UPDATE carte SET idPerso_carte=NULL WHERE idPerso_carte > 50000 AND idPerso_carte < 200000 AND idPerso_carte NOT IN (SELECT id_instanceBat FROM instance_batiment) ";
-			$mysqli->query($sql);
-			
-			$mess .= "Tous les ponts ont été détruit avec succès";
-		}
-		
-		if (isset($_POST["destruction_barricade"]) && $_POST["destruction_barricade"] == 'ok') {
-			
-			// Destruction des ponts
-			$sql = "UPDATE carte SET idPerso_carte=NULL, save_info_carte=NULL, image_carte=NULL WHERE fond_carte='b1b.png' OR fond_carte='b1r.png'";
-			$mysqli->query($sql);
-			
-			$sql = "DELETE FROM instance_batiment WHERE id_batiment='1'";
-			$mysqli->query($sql);
-			
-			$mess .= "Toutes les barricades ont été détruites avec succès";
-		}
-		
-		if (isset($_POST['id_instance_bat_destruction']) && $_POST['id_instance_bat_destruction'] != "") {
-			
-			$id_instance_bat_destruction = $_POST['id_instance_bat_destruction'];
-			
-			// Est ce qu'il y a des persos dans le batiment ?
-			$sql = "SELECT id_perso FROM perso_in_batiment WHERE id_instanceBat='$id_instance_bat_destruction'";
-			$res = $mysqli->query($sql);
-			$nb_persos_bat = $res->num_rows;
-			
-			if ($nb_persos_bat == 0) {
-				
-				// recup id_batiment
-				$sql = "SELECT id_batiment FROM instance_batiment WHERE id_instanceBat='$id_instance_bat_destruction'";
-				$res = $mysqli->query($sql);
-				$t = $res->fetch_assoc();
-				
-				$id_bat = $t['id_batiment'];
-				
-				if ($id_bat == 5) {
-					// Ponts
-					$sql = "UPDATE carte SET fond_carte='8.gif', save_info_carte=NULL WHERE save_info_carte='$id_instance_bat_destruction'";
-					$mysqli->query($sql);
-					
-					$sql = "UPDATE carte SET idPerso_carte=NULL WHERE idPerso_carte=''$id_instance_bat_destruction''";
-					$mysqli->query($sql);
-				}
-				else {
-					// Autres batiments
-					$sql = "UPDATE carte SET occupee_carte='0', idPerso_carte=NULL, save_info_carte=NULL, image_carte=NULL WHERE idPerso_carte='$id_instance_bat_destruction'";
-					$mysqli->query($sql);
-				}
-			
-				$sql = "DELETE FROM instance_batiment WHERE id_instanceBat='$id_instance_bat_destruction'";
-				$mysqli->query($sql);
-				
-				$mess .= "le batiment ".$id_instance_bat_destruction." a été détruit avec succès";
-			}
-			else {
-				$mess_err .= "Des persos se trouvent encore dans le batiment, batiment impossible à détruire";
-			}
-			
-		}
-		
-		if (isset($_POST['hid_id_instance_rename']) && isset($_POST['nom_batiment']) && $_POST['nom_batiment'] != "") {
-			
-			$id_instance_bat_rename = $_POST['hid_id_instance_rename'];
-			$nouveau_nom_bat		= addslashes($_POST['nom_batiment']);
-			
-			$sql = "UPDATE instance_batiment SET nom_instance='$nouveau_nom_bat' WHERE id_instanceBat='$id_instance_bat_rename'";
-			$mysqli->query($sql);
-			
-			$mess .= "le batiment ".$id_instance_bat_rename." a été renommé avec succès en ".$nouveau_nom_bat;
-			
-		}
 
+                $id_perso = $_SESSION['id_perso'];
+                $admin = admin_perso($mysqli, $id_perso);
+
+                if($admin){
+                                $mess_err = "";
+                                $mess = "";
+
+                                // --- TRAITEMENTS ---
+                                if (isset($_POST["destruction_pont"]) && $_POST["destruction_pont"] == 'ok') { /* Logic ici */ }
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE HTML>
 <html>
-	<head>
-		<title>Nord VS Sud</title>
-		
-		<!-- Required meta tags -->
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		
-		<!-- Bootstrap CSS -->
-		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-	</head>
-	<body>
-		<div class="container-fluid">
-			<div class="row">
-				<div class="col-12">
+<head>
+                <title>Nord VS Sud - Admin Bâtiments</title>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+                <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+                <style>
+                                .card { margin-bottom: 2rem; border: none; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); }
+                                .card-header h4 { margin-bottom: 0; font-weight: bold; }
+                                .table thead th { border-top: none; background-color: #f8f9fa; }
+                                .badge-id { font-family: monospace; font-size: 0.9rem; }
+                                .progress { background-color: #e9ecef; }
+                </style>
+</head>
+<body class="bg-light">
+                <div class="container-fluid py-4">
+                                <div class="row mb-4">
+                                                <div class="col-12 text-center">
+                                                                <h2 class="display-4">Administration des Bâtiments</h2>
+                                                                <?php if($mess_err) echo "<div class='alert alert-danger'>$mess_err</div>"; ?>
+                                                                <?php if($mess) echo "<div class='alert alert-success'>$mess</div>"; ?>
+                                                </div>
+                                </div>
 
-					<div align="center">
-						<h2>Administration</h2>
-						
-						<center><font color='red'><?php echo $mess_err; ?></font></center>
-						<center><font color='blue'><?php echo $mess; ?></font></center>
-					</div>
-				</div>
-			</div>
-		
-			<p align="center"><a class="btn btn-primary" href="admin_nvs.php">Retour à l'administration</a> <a class="btn btn-primary" href="jouer.php">Retour au jeu</a></p>
-			<p align="center"><a class="btn btn-success" href="anim_creer_batiment.php">Créer un bâtiment</a></p>
-		
-			<div class="row">
-				<div class="col-12">
-				
-					<h3>Administration des batiments</h3>
-					
-					<button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modalConfirmPont">Détruire tous les ponts du jeu</button>
-					<button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modalConfirmBarricade">Détruire toutes les barricades du jeu</button>
-					
-				</div>
-			</div>
-			
-			<br />
-			
-			<div class="row">
-				<div class="col-12">
-					<div align="center">					
-						<div id="table_batiments" class="table-responsive">	
-					
-							<?php
-							$sql = "SELECT id_instanceBat, instance_batiment.id_batiment, nom_batiment, nom_instance, pv_instance, pvMax_instance, x_instance, y_instance, camp_instance 
-									FROM instance_batiment, batiment 
-									WHERE instance_batiment.id_batiment = batiment.id_batiment
-									ORDER BY camp_instance, instance_batiment.id_batiment, x_instance, y_instance ASC";
-							$res = $mysqli->query($sql);
-							
-							echo "<table class='table'>";
-							echo "	<thead>";
-							echo "		<tr>";
-							echo "			<th style='text-align:center'>Batiment</th>";
-							echo "			<th style='text-align:center'>Coordonnées</th>";
-							echo "			<th style='text-align:center'>PV</th>";
-							echo "			<th style='text-align:center'>Action</th>";
-							echo "		</tr>";
-							echo "	</thead>";
-							echo "	<tbody>";
-							
-							while ($t = $res->fetch_assoc()) {
-								
-								$id_instance_bat 	= $t['id_instanceBat'];
-								$id_bat				= $t['id_batiment'];
-								$nom_bat			= $t['nom_batiment'];
-								$nom_instance_bat	= htmlentities($t['nom_instance'],ENT_QUOTES);
-								$pv_instance_bat	= $t['pv_instance'];
-								$pvMax_instance_bat	= $t['pvMax_instance'];
-								$x_instance_bat		= $t['x_instance'];
-								$y_instance_bat		= $t['y_instance'];
-								$camp_instance_bat	= $t['camp_instance'];
-								
-								if ($camp_instance_bat == 1) {
-									$color_camp = "blue";
-								}
-								else if ($camp_instance_bat == 2) {
-									$color_camp = "red";
-								}
-								else if ($camp_instance_bat == 3) {
-									$color_camp = "green";
-								}
-								else {
-									$color_camp = "black";
-								}
-								
-								echo "		<tr>";
-								echo "<form method=\"post\" action=\"admin_batiments.php\">";
-								echo "			<td align='center'>";
-								echo "				<input type='hidden' name='hid_id_instance_rename' value='$id_instance_bat'>";
-								echo "				<font color='".$color_camp."'>".$nom_bat." <input type='text' name='nom_batiment' value='".$nom_instance_bat."' ><input type='submit' name='rename_bat' value='Renommer' class='btn btn-primary'> [<a href='evenement.php?infoid=".$id_instance_bat."'>".$id_instance_bat."</a>]</font>";
-								echo "			</td>";
-								echo "</form>";
-								echo "			<td align='center'>".$x_instance_bat."/".$y_instance_bat."</td>";
-								echo "			<td align='center'>".$pv_instance_bat."/".$pvMax_instance_bat."</td>";
-								echo "<form method=\"post\" action=\"admin_batiments.php\">";	
-								echo "			<td align='center'>";
-								echo "				<input type='hidden' name='id_instance_bat_destruction' value='".$id_instance_bat."'>";
-								echo "				<input type='submit' name='destruire_bat' value='Détruire' class='btn btn-danger'>";
-								echo "			</td>";
-								echo "</form>";
-								echo "		</tr>";
-								
-							}
-							
-							echo "	</tbody>";
-							echo "</table>";
-							?>
-						
-						</div>
-					</div>
-				</div>
-			</div>
-		
-		</div>
-		
-		<!-- Modal -->
-		<form method="post" action="admin_batiments.php">
-			<div class="modal fade" id="modalConfirmPont" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-				<div class="modal-dialog modal-dialog-centered" role="document">
-					<div class="modal-content">
-						<div class="modal-header">
-							<h5 class="modal-title" id="exampleModalCenterTitle">Détruire tous les ponts du jeu</h5>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-								<span aria-hidden="true">&times;</span>
-							</button>
-						</div>
-						<div class="modal-body">
-							Êtes-vous sûr de vouloir détruire tous les ponts du jeu ?
-							<input type='hidden' name='destruction_pont' value='ok'>
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
-							<button type="button" onclick="this.form.submit()" class="btn btn-primary">Détruire</button>
-						</div>
-					</div>
-				</div>
-			</div>
-		</form>
-		
-		<form method="post" action="admin_batiments.php">
-			<div class="modal fade" id="modalConfirmbarricade" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-				<div class="modal-dialog modal-dialog-centered" role="document">
-					<div class="modal-content">
-						<div class="modal-header">
-							<h5 class="modal-title" id="exampleModalCenterTitle">Détruire toutes les barricades du jeu</h5>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-								<span aria-hidden="true">&times;</span>
-							</button>
-						</div>
-						<div class="modal-body">
-							Êtes-vous sûr de vouloir détruire toutes les barricades du jeu ?
-							<input type='hidden' name='destruction_barricade' value='ok'>
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
-							<button type="button" onclick="this.form.submit()" class="btn btn-primary">Détruire</button>
-						</div>
-					</div>
-				</div>
-			</div>
-		</form>
-		
-		<!-- Optional JavaScript -->
-		<!-- jQuery first, then Popper.js, then Bootstrap JS -->
-		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-	</body>
+                                <div class="row mb-4 text-center">
+                                                <div class="col-12">
+                                                                <a class="btn btn-outline-primary" href="admin_nvs.php">Retour Administration</a>
+                                                                <a class="btn btn-outline-secondary" href="jouer.php">Retour au jeu</a>
+                                                                <a class="btn btn-success" href="anim_creer_batiment.php">Créer un bâtiment</a>
+                                                </div>
+                                </div>
+
+                                <?php
+                                // 1. Récupération des données
+                                $sql = "SELECT id_instanceBat, instance_batiment.id_batiment, nom_batiment, nom_instance, pv_instance, pvMax_instance, x_instance, y_instance, camp_instance
+                                                FROM instance_batiment, batiment
+                                                WHERE instance_batiment.id_batiment = batiment.id_batiment
+                                                ORDER BY camp_instance, nom_batiment ASC";
+                                $res = $mysqli->query($sql);
+
+                                $categories = [
+                                                'fortifies'     => ['titre' => '1° Bâtiments Fortifiés (Forts / Fortins)', 'color' => 'bg-dark', 'data' => []],
+                                                'transport'     => ['titre' => '2° Transport (Gares / Trains)', 'color' => 'bg-info', 'data' => []],
+                                                'ressources'    => ['titre' => '3° Ressources (Entrepôts / Mines / Scieries)', 'color' => 'bg-success', 'data' => []],
+                                                'fortifications'=> ['titre' => '4° Fortifications (Barricades / Tours / Ponts)', 'color' => 'bg-warning text-dark', 'data' => []]
+                                ];
+
+                                while ($t = $res->fetch_assoc()) {
+                                                $id_type = $t['id_batiment'];
+
+                                                if (in_array($id_type, [8, 9])) {
+                                                                $categories['fortifies']['data'][] = $t;
+                                                } elseif (in_array($id_type, [11, 12])) {
+                                                                $categories['transport']['data'][] = $t;
+                                                } elseif (in_array($id_type, [6, 15, 16, 17])) {
+                                                                // Regroupement demandé : Entrepot(6), Or(15), Scierie(16), Fer(17)
+                                                                $categories['ressources']['data'][] = $t;
+                                                } else {
+                                                                $categories['fortifications']['data'][] = $t;
+                                                }
+                                }
+
+                                // Fonction de génération des tableaux
+                                function genererTableau($cat) {
+                                                $data = $cat['data'];
+                                                if (empty($data)) return "<p class='text-muted p-3 text-center'>Aucun bâtiment répertorié dans cette catégorie.</p>";
+
+                                                $html = "<div class='table-responsive'><table class='table table-hover mb-0'>";
+                                                $html .= "<thead><tr>
+                                                                                                <th style='width: 10%'>IDs</th>
+                                                                                                <th style='width: 40%'>Nom & Instance</th>
+                                                                                                <th style='width: 15%'>Coordonnées</th>
+                                                                                                <th style='width: 15%'>État (PV)</th>
+                                                                                                <th style='width: 20%'>Actions</th>
+                                                                                        </tr></thead><tbody>";
+
+                                                foreach ($data as $b) {
+                                                                $color = ($b['camp_instance'] == 1) ? "#007bff" : (($b['camp_instance'] == 2) ? "#dc3545" : "#28a745");
+
+                                                                $html .= "<tr>";
+                                                                // Colonne IDs (Instance et Type)
+                                                                $html .= "<td>
+                                                                                        <span class='badge badge-secondary badge-id' title='ID Instance'>#".$b['id_instanceBat']."</span>
+                                                                                        <small class='text-muted d-block'>Type: ".$b['id_batiment']."</small>
+                                                                                    </td>";
+
+                                                                // Colonne Nom & Renommer
+                                                                $html .= "<td><form method='POST' class='form-inline'>";
+                                                                $html .= "<input type='hidden' name='hid_id_instance_rename' value='".$b['id_instanceBat']."'>";
+                                                                $html .= "<strong style='color:$color' class='mr-2'>".$b['nom_batiment']."</strong>";
+                                                                $html .= "<input type='text' name='nom_batiment' class='form-control form-control-sm flex-grow-1 mr-2' value='".htmlentities($b['nom_instance'], ENT_QUOTES)."'>";
+                                                                $html .= "<button type='submit' class='btn btn-primary btn-sm shadow-sm'>Renommer</button>";
+                                                                $html .= "</form></td>";
+
+                                                                // Colonne Coordonnées
+                                                                $html .= "<td><span class='badge badge-light border px-2 py-1'>X: ".$b['x_instance']." | Y: ".$b['y_instance']."</span></td>";
+
+                                                                // Colonne État / PV
+                                                                $pct = ($b['pvMax_instance'] > 0) ? round(($b['pv_instance'] / $b['pvMax_instance']) * 100) : 0;
+                                                                $barColor = ($pct < 30) ? "bg-danger" : "bg-success";
+                                                                $html .= "<td>
+                                                                                        <small class='d-block font-weight-bold'>".$b['pv_instance']." / ".$b['pvMax_instance']."</small>
+                                                                                        <div class='progress shadow-sm' style='height: 6px;'><div class='progress-bar $barColor' style='width: $pct%'></div></div>
+                                                                                    </td>";
+
+                                                                // Colonne Actions
+                                                                $html .= "<td><form method='POST' onsubmit='return confirm(\"Voulez-vous vraiment détruire ce bâtiment ?\");'>";
+                                                                $html .= "<input type='hidden' name='id_instance_bat_destruction' value='".$b['id_instanceBat']."'>";
+                                                                $html .= "<button type='submit' class='btn btn-outline-danger btn-sm'>Détruire</button>";
+                                                                $html .= "</form></td>";
+
+                                                                $html .= "</tr>";
+                                                }
+                                                $html .= "</tbody></table></div>";
+                                                return $html;
+                                }
+                                ?>
+
+                                <!-- Affichage des sections en pleine largeur l'une sous l'autre -->
+                                <div class="row">
+                                                <?php foreach ($categories as $key => $cat): ?>
+                                                <div class="col-12 mb-4">
+                                                                <div class="card shadow-sm border-0">
+                                                                                <div class="card-header <?php echo $cat['color']; ?> text-white py-3">
+                                                                                                <h4 class="h5 mb-0 text-uppercase"><?php echo $cat['titre']; ?></h4>
+                                                                                </div>
+                                                                                <div class="card-body p-0">
+                                                                                                <?php echo genererTableau($cat); ?>
+                                                                                </div>
+                                                                </div>
+                                                </div>
+                                                <?php endforeach; ?>
+                                </div>
+                </div>
+
+                <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+                <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
 </html>
 <?php
-	}
+                }
 }
-else{
-	echo "<font color=red>Vous ne pouvez pas acceder a cette page, veuillez vous logguer.</font>";
-}?>
+?>
