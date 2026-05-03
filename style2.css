@@ -4,7 +4,7 @@ body
 {
 	width: 100%;
 	margin: auto; /* Pour centrer notre page */
-	margin-top: 0px; /* Pour éviter de coller avec le haut de la fenêtre du navigateur. Essayez d'enlever pour voir ! */
+	margin-top: 0px; /* Pour ï¿½viter de coller avec le haut de la fenï¿½tre du navigateur. Essayez d'enlever pour voir ! */
 	margin-bottom: 0px;    /* Idem pour le bas du navigateur */
 	background-color: #EEEEEE; /*#200000*/ 
 }
@@ -19,8 +19,8 @@ body
 
 #gauche
 {
-   float: left; /* Le menu flottera à gauche */
-   width: 150px; /* Très important : donner une taille au menu */
+   float: left; /* Le menu flottera ï¿½ gauche */
+   width: 150px; /* Trï¿½s important : donner une taille au menu */
 }
 
 #gauche a:hover {
@@ -32,8 +32,8 @@ body
 
 #droite
 {
-   float: right; /* Le menu flottera à droite */
-   width: 160px; /* Très important : donner une taille au menu */
+   float: right; /* Le menu flottera ï¿½ droite */
+   width: 160px; /* Trï¿½s important : donner une taille au menu */
 
 }
 
@@ -49,7 +49,7 @@ body
    padding: 5px;
    padding-top: 0px;
 
-   margin-bottom: 20px; /* Pour éviter que les éléments du menu ne soient trop collés */
+   margin-bottom: 20px; /* Pour ï¿½viter que les ï¿½lï¿½ments du menu ne soient trop collï¿½s */
 }
 
 .element_menu h3 /* Tous les titres de menus */
@@ -60,13 +60,13 @@ body
    margin-top: 3px;
 }
 
-.element_menu ul /* Toutes les listes à puces se trouvant dans un menu */
+.element_menu ul /* Toutes les listes ï¿½ puces se trouvant dans un menu */
 {
    list-style-image: url("./images/perso1t.png"); /* On change l'apparence des puces */
-   padding: 0px; /* Tous les côtés ont une marge intérieure de 0 pixels */
-   padding-left: 20px; /* ... mais on modifie ensuite la marge de gauche, donc celle-là fera finalement 20 pixels */
-   margin: 0px; /* Idem pour margin, ça nous évite d'avoir à en écrire 4 (margin-left, margin-right...) */
-   margin-bottom: 5px; /* Même chose que tout à l'heure, on modifie ensuite juste margin-bottom, mais tous les autres sont à 0px */
+   padding: 0px; /* Tous les cï¿½tï¿½s ont une marge intï¿½rieure de 0 pixels */
+   padding-left: 20px; /* ... mais on modifie ensuite la marge de gauche, donc celle-lï¿½ fera finalement 20 pixels */
+   margin: 0px; /* Idem pour margin, ï¿½a nous ï¿½vite d'avoir ï¿½ en ï¿½crire 4 (margin-left, margin-right...) */
+   margin-bottom: 5px; /* Mï¿½me chose que tout ï¿½ l'heure, on modifie ensuite juste margin-bottom, mais tous les autres sont ï¿½ 0px */
 }
 
 .element_menu a /* Tous les liens se trouvant dans un menu */

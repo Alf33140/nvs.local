@@ -2717,95 +2717,14 @@ if($dispo == '1' || $admin){
 		<link rel="stylesheet" href="../public/css/app.css">
 
 		<link href="../style2.css" rel="stylesheet" type="text/css">
-		
+
 		<!-- Scripts -->
 		<!-- Bunddle Popper.js & Bootstrap JS -->
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous" defer></script>
 		<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
 		<script type="text/javascript" src="../public/js/app.js" defer></script>
-           <style>
-        /* FORCE L'AFFICHAGE DE L'OVERLAY */
-        #container-carte-meteo {
-            position: relative;
-            display: inline-block;
-            overflow: hidden;
-            vertical-align: top;
-            margin-left: 180px;
-            padding: 0;
-            border: 1px solid #444; /* Optionnel : pour bien voir les limites de la carte */
-        }
-
-        #weather-overlay {
-            position: absolute !important;
-            top: 0 !important;
-            left: 60px !important;
-            right: 0px !important;
-            display: block !important;
-            visibility: visible !important;
-            z-index: 100 !important;
-            /* On force la taille pour contrer le height: 0px du JS */
-            min-width: 100% !important;
-            min-height: 100% !important;
-            pointer-events: none !important;
-        }
-        .perception-overlay {
-            mask-image: radial-gradient(circle at var(--perso-x) var(--perso-y), transparent 100px, black 150px);
-        }
-        /* 0-20 min : Jaune doré */
-        .aube-debut { background-color: rgba(255, 215, 0, 0.4) !important; }
-
-        /* 20-40 min : Rose / Orange */
-        .aube-milieu { background-color: rgba(255, 120, 70, 0.35) !important; }
-
-        /* 40-60 min : Rouge léger */
-        .aube-fin { background-color: rgba(255, 60, 60, 0.25) !important; }
-
-
-
-       * Animation de transition douce */
-        @keyframes apparitionCrepuscule {
-            from {
-                background: rgba(255, 255, 255, 0); /* Invisible au début */
-            }
-            to {
-                background: linear-gradient(135deg, rgba(255, 100, 150, 0.2), rgba(40, 60, 150, 0.3));
-            }
-        }
-
-        .overlay-crepuscule {
-            display: block !important;
-            mix-blend-mode: multiply !important;
-            width: 100%;
-            height: 100%;
-            /* L'animation dure 10 secondes, une seule fois, et reste sur l'état final */
-            animation: apparitionCrepuscule 10s forwards;
-        }
-
-            /* Nuit : un bleu profond mais qui laisse voir la carte */
-            .overlay-nuit {
-                background-color: rgba(47, 113, 196, 0.6) !important;
-                mix-blend-mode: multiply !important;
-            }
-
-            /* Jour : transparence totale pour ne pas dénaturer les couleurs */
-            .overlay-jour {
-                background-color: transparent !important;
-            }
-
-            @keyframes lightning-flash {
-                0% { background-color: transparent; }
-                92% { background-color: transparent; }
-                94% { background-color: rgba(255, 255, 255, 0.7); } /* Flash blanc */
-                96% { background-color: transparent; }
-                98% { background-color: rgba(255, 255, 255, 0.4); } /* Petit flash secondaire */
-                100% { background-color: transparent; }
-            }
-
-            .effet-orage-actif {
-                /* On utilise !important pour être sûr que l'animation l'emporte sur le reste */
-                animation: lightning-flash 6s infinite !important;
-            }
+        <style>
 
         </style>
 	</head>
@@ -3338,7 +3257,7 @@ if($dispo == '1' || $admin){
 								</table>
 							</div>
 						</div>
-                    
+
 						<!-- actions de combat pour grands écrans -->
 						<div class='row d-none d-md-flex'>
 							<h3 class='fs-5'>Actions de combat</h3>
@@ -4496,8 +4415,8 @@ if($dispo == '1' || $admin){
 					<div id="wrapper-carte"  style="position: relative; "class='row'>
 						<div id="container-carte-meteo" style="position: relative;" class='col-12 col-lg table-responsive p-0'>
 
-                            <div id="weather-overlay" style="position: absolute; top: 0; left: 40px; width: 100%; height: 100%; z-index: 10; pointer-events: none;"></div>
-                              <!-- L'OVERLAY DYNAMIQUE -->
+                            <div id="weather-overlay" style="position: absolute; z-index: 10; pointer-events: none; display: none;"></div>
+
 
                             <?php
 							// recuperation des données de la carte
@@ -4523,7 +4442,7 @@ if($dispo == '1' || $admin){
 							?>
 
 
-							<table id="ma-carte-rpg" class='<?= $class_cadrillage?> text-center' width='<?=$taille_table?>' height='<?=$taille_table?>' align='center' cellspacing='0' cellpadding='0'>
+							<table id="ma-carte-rpg" class='<?= $class_cadrillage?> text-center' width='<?=$taille_table?>' height='<?=$taille_table?>' cellspacing='0' cellpadding='0' style="margin: 0 auto;">
 								<tr class='bg-main'>
 									<td width='40' heigth='40' align='center'>y \ x</td>
 
@@ -4770,25 +4689,25 @@ if($dispo == '1' || $admin){
 
                                                             echo "<td width=40 height=40 background=\"../fond_carte/".$tabCarte["fond_carte"]."\">";
 															// --- CORRECTION NOUVEAUX BATIMENTS (6, 15, 16, 17) ---
-$image_a_tracer = $tabCarte["image_carte"];
-// Correction spécifique pour l'Entrepôt (ID 6)
-if ($type_bat == 6) {
-    if (strpos($image_a_tracer, 'Entrepot_') === false) {
-        $image_a_tracer = str_replace('Entrepot', 'Entrepot_', $image_a_tracer);
-    }
-}
-// Calcul du chemin de l'image selon le type de bâtiment
-if ($type_bat == 6 || $type_bat == 15 || $type_bat == 16 || $type_bat == 17 || strpos($image_a_tracer, 'public/') === 0) {
-    if (strpos($image_a_tracer, 'public/') === false) {
-        $src_finale = "../public/img/buildings/" . $img_folder . "/" . $image_a_tracer;
-    } else {
-        $src_finale = "../" . $image_a_tracer;
-    }
-} else {
-    // Comportement original inchangé pour tous les autres bâtiments
-    $src_finale = "../public/img/buildings/" . $img_folder . "/" . $image_a_tracer;
-}
-echo "	<img tabindex='0' border=0 src=\"" . $src_finale . "\" width=40 height=40
+                                                                $image_a_tracer = $tabCarte["image_carte"];
+                                                                // Correction spécifique pour l'Entrepôt (ID 6)
+                                                                if ($type_bat == 6) {
+                                                                    if (strpos($image_a_tracer, 'Entrepot_') === false) {
+                                                                        $image_a_tracer = str_replace('Entrepot', 'Entrepot_', $image_a_tracer);
+                                                                    }
+                                                                }
+                                                                // Calcul du chemin de l'image selon le type de bâtiment
+                                                                if ($type_bat == 6 || $type_bat == 15 || $type_bat == 16 || $type_bat == 17 || strpos($image_a_tracer, 'public/') === 0) {
+                                                                    if (strpos($image_a_tracer, 'public/') === false) {
+                                                                        $src_finale = "../public/img/buildings/" . $img_folder . "/" . $image_a_tracer;
+                                                                    } else {
+                                                                        $src_finale = "../" . $image_a_tracer;
+                                                                    }
+                                                                } else {
+                                                                    // Comportement original inchangé pour tous les autres bâtiments
+                                                                    $src_finale = "../public/img/buildings/" . $img_folder . "/" . $image_a_tracer;
+                                                                }
+                                                                echo "	<img tabindex='0' border=0 src=\"" . $src_finale . "\" width=40 height=40
 																		data-bs-toggle='popover'
 																		data-bs-trigger='focus'
 																		data-bs-html='true'
@@ -5514,25 +5433,33 @@ function rafraichirTerrain() {
         const tableCarte = document.getElementById('ma-carte-rpg');
 
         if (overlay && tableCarte) {
-            // Reset complet
+            // 1. Reset visuel complet
             overlay.style.display = 'none';
             overlay.style.background = 'none';
             overlay.style.webkitMaskImage = 'none';
             overlay.style.maskImage = 'none';
             overlay.style.opacity = "1";
-            overlay.style.filter = "none"; // Reset des filtres (important pour le sable)
+            overlay.style.filter = "none";
             overlay.classList.remove('effet-orage-actif');
 
+            // 2. RECALCUL DE LA POSITION (Le secret pour la résolution/zoom)
+            overlay.style.position = 'absolute';
+            overlay.style.top = tableCarte.offsetTop + "px";
+            overlay.style.left = tableCarte.offsetLeft + "px";
+            overlay.style.width = tableCarte.offsetWidth + "px";
+            overlay.style.height = tableCarte.offsetHeight + "px";
+
+            // 3. Calcul des centres relatif à la table
             const largeurTable = tableCarte.offsetWidth;
             const hauteurTable = tableCarte.offsetHeight;
-            overlay.style.width = largeurTable + "px";
-            overlay.style.height = hauteurTable + "px";
 
             const centerX = ((largeurTable - 40) / 2) + 40;
             const centerY = ((hauteurTable - 40) / 2) + 40;
 
             if (dataMeteo.effet && dataMeteo.effet !== "soleil") {
                 const effet = dataMeteo.effet.toLowerCase().trim();
+                overlay.style.display = 'block';
+
                 const diffX = (dataMeteo.x_center - dataMeteo.joueur_x) * 40;
                 const diffY = (dataMeteo.joueur_y - dataMeteo.y_center) * 40;
 
@@ -5540,15 +5467,13 @@ function rafraichirTerrain() {
                 const posY = centerY + diffY;
                 const rayonPx = dataMeteo.rayon * 40;
 
-                // --- LOGIQUE PAR EFFET ---
-
+                // --- LOGIQUE DES EFFETS ---
                 if (effet === "brouillard") {
-                    overlay.style.display = 'block';
                     overlay.style.background = `radial-gradient(
                         circle at ${posX}px ${posY}px,
                         rgba(200, 200, 200, 0.9) 0,
                         rgba(200, 200, 200, 0.9) ${rayonPx}px,
-                        rgba(200, 200, 200, 0.4) ${rayonPx + 120}px
+                        rgba(200, 200, 200, 0.4) ${rayonPx + 40}px
                     )`;
                     const masque = `radial-gradient(circle at ${centerX}px ${centerY}px, transparent 0, transparent 80px, black 160px)`;
                     overlay.style.webkitMaskImage = masque;
@@ -5556,7 +5481,6 @@ function rafraichirTerrain() {
                     overlay.style.zIndex = "100";
 
                 } else if (effet === "pluie" || effet === "orage") {
-                    overlay.style.display = 'block';
                     overlay.style.background = "url('../fond_carte/rain.gif') repeat";
                     overlay.style.opacity = "0.5";
                     const masqueLocal = `radial-gradient(circle at ${posX}px ${posY}px, black 0, black ${rayonPx}px, transparent ${rayonPx + 5}px)`;
@@ -5565,13 +5489,8 @@ function rafraichirTerrain() {
                     if (effet === "orage") overlay.classList.add('effet-orage-actif');
 
                 } else if (effet === "tempete") {
-                    // --- TEMPÊTE DE SABLE ---
-                    overlay.style.display = 'block';
-                    // Couleur ocre/sable avec opacité
                     overlay.style.background = "rgba(194, 178, 128, 0.4)";
-                    // Filtre sepia pour teinter les tuiles du dessous
                     overlay.style.filter = "sepia(0.5) saturate(2) contrast(0.8)";
-
                     const masqueSable = `radial-gradient(circle at ${posX}px ${posY}px, black 0, black ${rayonPx}px, transparent ${rayonPx + 20}px)`;
                     overlay.style.webkitMaskImage = masqueSable;
                     overlay.style.maskImage = masqueSable;
@@ -5581,6 +5500,18 @@ function rafraichirTerrain() {
     })
     .catch(err => console.error("Erreur rafraîchissement terrain:", err));
 }
+
+// --- AJUSTEMENT INSTANTANÉ AU REDIMENSIONNEMENT ---
+window.addEventListener('resize', () => {
+    const overlay = document.getElementById('weather-overlay');
+    const tableCarte = document.getElementById('ma-carte-rpg');
+    if (overlay && tableCarte) {
+        overlay.style.top = tableCarte.offsetTop + "px";
+        overlay.style.left = tableCarte.offsetLeft + "px";
+        overlay.style.width = tableCarte.offsetWidth + "px";
+        overlay.style.height = tableCarte.offsetHeight + "px";
+    }
+});
 
 document.addEventListener("DOMContentLoaded", () => {
     rafraichirTerrain();
