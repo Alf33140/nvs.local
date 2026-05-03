@@ -120,7 +120,7 @@ function nouveau_tour_joueur($mysqli, $id_joueur, $new_dla, $clan, $couleur_clan
 
         // --- 1. RÈGLE RÉCUPÉRATION PV (Arrondi à l'entier supérieur via ceil) ---
         $recup_totale = $t_persos["recup_perso"] + $t_persos["bonusRecup_perso"];
-        $gain_pv = ($recup_totale > 0) ? ceil($recup_totale / 44) : 0;
+        $gain_pv = ($recup_totale > 0) ? ceil($recup_totale / 39) : 0;
         $new_pv  = min($t_persos["pvMax_perso"], $t_persos["pv_perso"] + $gain_pv);
 
         // --- 2. RÈGLE RÉCUPÉRATION PA (Avec Compteur) ---
@@ -129,7 +129,7 @@ function nouveau_tour_joueur($mysqli, $id_joueur, $new_dla, $clan, $couleur_clan
         $new_pa = $t_persos["pa_perso"];
 
         if ($new_pa < $pa_max) {
-            $c_pa += ($pa_max / 44);
+            $c_pa += ($pa_max / 39);
             if ($c_pa >= 1) {
                 $new_pa += 1;
                 $c_pa -= 1;
@@ -144,7 +144,7 @@ function nouveau_tour_joueur($mysqli, $id_joueur, $new_dla, $clan, $couleur_clan
         $new_pm = $t_persos["pm_perso"];
 
         if ($new_pm < $pm_max) {
-            $c_pm += ($pm_max / 44);
+            $c_pm += ($pm_max / 39);
             if ($c_pm >= 1) {
                 $new_pm += 1;
                 $c_pm -= 1;
@@ -155,7 +155,7 @@ function nouveau_tour_joueur($mysqli, $id_joueur, $new_dla, $clan, $couleur_clan
 
         // --- 4. GAINS OR / PC ---
         $g_or = 0; $g_pc = 0;
-        if (($new_dla - $dla_old) >= (44 * 3600)) {
+        if (($new_dla - $dla_old) >= (39 * 3600)) {
             if ($t_persos["chef"] == '1') {
                 $g_or = 3; $g_pc = 1;
             } elseif (!$t_persos["est_renvoye"]) {
