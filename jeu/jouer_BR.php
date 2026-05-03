@@ -5390,7 +5390,6 @@ if($dispo == '1' || $admin){
 	<script>
 /**
  * GESTION DYNAMIQUE DE LA MÉTÉO ET DU CYCLE JOUR/NUIT
- * Harmonisé avec la BDD : x_center, y_center
  */
 function rafraichirTerrain() {
     console.log("Rafraîchissement des effets climatiques...");
@@ -5442,7 +5441,7 @@ function rafraichirTerrain() {
             overlay.style.filter = "none";
             overlay.classList.remove('effet-orage-actif');
 
-            // 2. RECALCUL DE LA POSITION (Le secret pour la résolution/zoom)
+            // 2. RECALCUL DE LA POSITION (résolution/zoom)
             overlay.style.position = 'absolute';
             overlay.style.top = tableCarte.offsetTop + "px";
             overlay.style.left = tableCarte.offsetLeft + "px";
@@ -5522,7 +5521,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </html>
 <?php
 
-// require_once('../mvc/view/game_board/index.php');
+
 }
 else {
 	// logout
