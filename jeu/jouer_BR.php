@@ -11,55 +11,9 @@ $mysqli = db_connexion();
 
 include ('../nb_online.php');
 
-date_default_timezone_set('Europe/Paris');
-
-$id_perso = 0;
-
-// Traitement selection perso
-if (isset($_POST["liste_perso"]) && $_POST["liste_perso"] != "") {
-
-	if(isset($_SESSION["ID_joueur"])){
-
-		$id_joueur 	= $_SESSION["ID_joueur"];
-		$id_perso	= $_POST["liste_perso"];
-
-		// recuperation des infos du perso
-		$sql = "SELECT idJoueur_perso FROM perso WHERE id_perso='$id_perso'";
-		$res = $mysqli->query($sql);
-		$t_perso = $res->fetch_assoc();
-
-		$id_joueur_perso 	= $t_perso["idJoueur_perso"];
-
-		// Le perso appartient-il bien au joueur ?
-		if ($id_joueur_perso == $id_joueur) {
-			$id_perso = $_SESSION['id_perso'] = $_POST["liste_perso"];
-		}
-		else {
-			// Tentative de triche !
-			$text_triche = "Le joueur $id_joueur a essayé de prendre controle du perso $id_perso qui ne lui appartient pas !";
-
-			$sql = "INSERT INTO tentative_triche (id_perso, texte_tentative) VALUES ('$id_perso', '$text_triche')";
-			$mysqli->query($sql);
-
-			$_SESSION = array(); // On écrase le tableau de session
-			session_destroy(); // On détruit la session
-
-			//redirection
-			header("location:index.php");
-		}
-
-	} else {
-		header("Location:../index.php");
-	}
-}
-
-if(isset($_SESSION["id_perso"])){
-	$id_perso = $_SESSION['id_perso'];
-}
-
 // recupération config jeu
 $dispo = config_dispo_jeu($mysqli);
-$admin = admin_perso($mysqli, $id_perso);
+$admin = $user->admin_perso;
 
 if($dispo == '1' || $admin){
 
@@ -73,61 +27,7 @@ if($dispo == '1' || $admin){
 			$page_acces .= '?'.$_SERVER['QUERY_STRING'];
 		}
 
-		// acces_log
-		$sql = "INSERT INTO acces_log (date_acces, id_perso, page) VALUES (NOW(), '$id_perso', '$page_acces')";
-		$mysqli->query($sql);
-
-		// Alerte si 10 refresh ou plus en 10 sec (déco ?)
-		$sql = "SELECT COUNT(*) as count_log_10sec FROM acces_log WHERE id_perso='$id_perso' AND page = 'index.php' AND date_acces > (NOW() - INTERVAL 10 SECOND)";
-		$res = $mysqli->query($sql);
-		$t = $res->fetch_assoc();
-
-		$count_log_10sec = $t['count_log_10sec'];
-
-		if ($count_log_10sec >= 10) {
-			// Est-ce qu'il y a déjà eu une alerte de ce type pour ce perso dans les 30 dernières secondes ?
-			$sql = "SELECT COUNT(*) as nb_alerte_10sec FROM alerte_anim WHERE type_alerte='2' AND id_perso='$id_perso' AND date_alerte > (NOW() - INTERVAL 30 SECOND)";
-			$res = $mysqli->query($sql);
-			$t = $res->fetch_assoc();
-
-			$nb_alerte_10sec = $t['nb_alerte_10sec'];
-
-			if ($nb_alerte_10sec == 0) {
-				$sql = "INSERT INTO alerte_anim (type_alerte, id_perso, raison_alerte, date_alerte) VALUES ('2', '$id_perso', 'Page de jeu - plus de 10 refresh en moins de 10 secondes : $count_log_10sec', NOW())";
-				$mysqli->query($sql);
-			}
-		}
-
-		// Alerte si 30 refresh ou plus en moins d'une minute
-		$sql = "SELECT COUNT(*) as count_log_1min FROM acces_log WHERE id_perso='$id_perso' AND page = 'index.php' AND date_acces > (NOW() - INTERVAL 60 SECOND)";
-		$res = $mysqli->query($sql);
-		$t = $res->fetch_assoc();
-
-		$count_log_1min = $t['count_log_1min'];
-
-		if ($count_log_1min >= 30) {
-
-			// Est-ce qu'il y a déjà eu une alerte de ce type pour ce perso dans les 3 dernière minutes ?
-			$sql = "SELECT COUNT(*) as nb_alerte_1min FROM alerte_anim WHERE type_alerte='3' AND id_perso='$id_perso' AND date_alerte > (NOW() - INTERVAL 180 SECOND)";
-			$res = $mysqli->query($sql);
-			$t = $res->fetch_assoc();
-
-			$nb_alerte_1min = $t['nb_alerte_1min'];
-
-			if ($nb_alerte_1min == 0) {
-				$sql = "INSERT INTO alerte_anim (type_alerte, id_perso, raison_alerte, date_alerte) VALUES ('3', '$id_perso', 'Page de jeu - plus de 30 refresh en moins de 1 minute : $count_log_1min', NOW())";
-				$mysqli->query($sql);
-			}
-		}
-
-		// TODO - Vérification 10 derniers logs d'accès, sont-il sur le même delta de temps ?
-
-
-		$sql_joueur = "SELECT idJoueur_perso FROM perso WHERE id_perso='$id_perso'";
-		$res_joueur = $mysqli->query($sql_joueur);
-		$t_joueur = $res_joueur->fetch_assoc();
-
-		$id_joueur_perso = $t_joueur["idJoueur_perso"];
+		$id_joueur_perso = $_SESSION['ID_joueur'];
 
 		$sql_dla = "SELECT UNIX_TIMESTAMP(DLA_perso) as DLA, est_gele FROM perso WHERE idJoueur_perso='$id_joueur_perso' AND chef=1";
 		$res_dla = $mysqli->query($sql_dla);
@@ -2138,45 +2038,7 @@ if($dispo == '1' || $admin){
 				}
 
 				
-				$date_serveur = new DateTime('now', new DateTimeZone('Europe/Paris'));
 
-				$date_dla = date('d-m-Y H:i', $n_dla);
-				
-				if (anim_perso($mysqli, $id_perso)) {
-					// Récupération des demandes sur la gestion des compagnies
-					$sql = "SELECT * FROM compagnie_demande_anim, compagnies
-							WHERE compagnie_demande_anim.id_compagnie = compagnies.id_compagnie
-							AND compagnies.id_clan='$clan_p'";
-					$res = $mysqli->query($sql);
-					$nb_demandes_gestion_compagnie = $res->num_rows;
-
-					// Récupération des demandes sur la gestion des persos
-					$sql = "(SELECT perso_demande_anim.* FROM perso_demande_anim, perso
-							WHERE perso_demande_anim.id_perso = perso.id_perso
-							AND perso.clan = '$clan_p'
-							AND perso_demande_anim.type_demande = 1)
-							UNION ALL
-							(SELECT perso_demande_anim.* FROM perso_demande_anim, perso
-							WHERE perso_demande_anim.id_perso = perso.idJoueur_perso
-							AND perso.clan = '$clan_p'
-							AND perso.chef = '1'
-							AND perso_demande_anim.type_demande > 1)
-							";
-					$res = $mysqli->query($sql);
-					$nb_demandes_gestion_perso = $res->num_rows;
-
-					// Récupération du nombre de questions / remontées anims en attente de réponse
-					$sql = "SELECT id FROM anim_question WHERE id_camp='$clan_p' AND status='0'";
-					$res = $mysqli->query($sql);
-					$nb_questions_anim = $res->num_rows;
-
-					// Récupération du nombre de remontées de capture RP non traitées
-					$sql = "SELECT id FROM anim_capture WHERE statut='0'";
-					$res = $mysqli->query($sql);
-					$nb_captures_anim = $res->num_rows;
-
-					$nb_demande_a_traiter = $nb_demandes_gestion_compagnie + $nb_demandes_gestion_perso + $nb_questions_anim + $nb_captures_anim;
-				}
 				
 				// Récupération du nombre de missions actives
 				$sql_ma = "SELECT id_mission, nom_mission, texte_mission, recompense_thune, recompense_xp, recompense_pc, nombre_participant, date_debut_mission, date_fin_mission
@@ -2574,7 +2436,8 @@ if($dispo == '1' || $admin){
 					$perc_att = 1;
 				}
 				$res_portee_cac = resource_liste_cibles_a_portee_attaque($mysqli, 'carte', $id_perso, $porteeMin_arme_cac, $porteeMax_arme_cac, $perc_att, 'cac');
-
+				$targets_cac = $res_portee_cac->fetch_all(MYSQLI_ASSOC);
+				
 				// Récupération de l'arme à distance sur le perso
 				$sql = "SELECT arme.id_arme, nom_arme, porteeMin_arme, porteeMax_arme, coutPa_arme, degatMin_arme, valeur_des_arme, precision_arme, degatZone_arme, building_damage
 						FROM arme, perso_as_arme
@@ -2612,7 +2475,8 @@ if($dispo == '1' || $admin){
 
 				// Récupération de la liste des persos à portée d'attaque arme dist
 				$res_portee_dist = resource_liste_cibles_a_portee_attaque($mysqli, 'carte', $id_perso, $porteeMin_arme_dist, $porteeMax_arme_dist, $perc_att, 'dist');
-				
+				$targets_dist = $res_portee_dist->fetch_all(MYSQLI_ASSOC);
+
 				//<!--Génération de la carte-->
 				$perc_carte = $perc;
 				if ($perc_carte < 0) {
@@ -2782,46 +2646,46 @@ if($dispo == '1' || $admin){
 						<li class="nav-item">
 							<a class="nav-link" href="?action=character">
 								<img src="../public/img/icons/<?php echo $image_profil; ?>" class='size-12' alt="profil">
-								<span class='cat-title d-inline-block text-center w-50'>Mon bataillon</span>
+								<span class='title-ribbon title-ribbon-sm d-inline-block text-center w-50'>Mon bataillon</span>
 							</a>
 						</li>
 						<li class="nav-item">
 							<a class="nav-link" href="evenement.php">
 								<img src="../public/img/icons/<?php echo $image_evenement; ?>" class='size-12' alt="évènements">
-								<span class='cat-title d-inline-block text-center w-50'>Évènements</span>
+								<span class='title-ribbon title-ribbon-sm d-inline-block text-center w-50'>Évènements</span>
 							</a>
 						</li>
 						<li class="nav-item d-md-none">
 							<a class="nav-link" href="sac.php">
 								<img src="../public/img/icons/<?php echo $image_sac; ?>" class='size-12' alt="sac">
-								<span class='cat-title d-inline-block text-center w-50'>Sac</span>
+								<span class='title-ribbon title-ribbon-sm d-inline-block text-center w-50'>Sac</span>
 							</a>
 						</li>
 						<li class="nav-item d-none">
 							<a class="nav-link" href="carte/carte.php">
 								<img src="../public/img/icons/map_icon.png" class='size-12' alt="mini map">
-								<span class='cat-title d-inline-block text-center w-50'>Carte</span>
+								<span class='title-ribbon title-ribbon-sm d-inline-block text-center w-50'>Carte</span>
 							</a>
 						</li>
 						<?php if ($type_perso != 6): ?>
 						<li class="nav-item d-md-none">
 							<a class="nav-link" href="messagerie.php">
 								<img src="../public/img/icons/<?php echo $image_messagerie; ?>" class='size-12' alt="messagerie">
-								<span class='cat-title d-inline-block text-center w-50 position-relative'>Messagerie<?php if($nb_nouveaux_mes) { echo "<span class='position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger'>$nb_nouveaux_mes</span>"; }?></span>
+								<span class='title-ribbon title-ribbon-sm d-inline-block text-center w-50 position-relative'>Messagerie<?php if($nb_nouveaux_mes) { echo "<span class='position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger'>$nb_nouveaux_mes</span>"; }?></span>
 							</a>
 						</li>
 						<?php endif; ?>
 						<li class="nav-item">
 							<a class="nav-link" href="?action=ranking">
 								<img src="../public/img/icons/ranking_icon.png" class='size-12' alt="classement">
-								<span class='cat-title d-inline-block text-center w-50'>Classements</span>
+								<span class='title-ribbon title-ribbon-sm d-inline-block text-center w-50'>Classements</span>
 							</a>
 						</li>
 						<?php if ($type_perso != 6): ?>
 						<li class="nav-item">
 							<a class="nav-link" href="compagnie.php">
 								<img src="../public/img/icons/<?php echo $image_compagnie; ?>" class='size-12' alt="compagnie">
-								<span class='cat-title d-inline-block text-center w-50 position-relative'>Compagnie
+								<span class='title-ribbon title-ribbon-sm d-inline-block text-center w-50 position-relative'>Compagnie
 								<?php if ($nb_demandes_adhesion_compagnie || $nb_demandes_depart_compagnie || $nb_demandes_emprunt_compagnie) { ?>
 									<span class='position-absolute top-0 start-100 translate-middle badge rounded-pill p-2 bg-danger border border-light rounded-circle'><span class="visually-hidden">Demandes en attente</span></span>
 								<?php }?>
@@ -2833,7 +2697,7 @@ if($dispo == '1' || $admin){
 						<li class="nav-item">
 							<a class="nav-link" href="command.php">
 								<img src="../public/img/icons/<?php echo $image_em; ?>" class='size-12' alt="etat major">
-								<span class='cat-title d-inline-block text-center w-50 position-relative'>État Major
+								<span class='title-ribbon title-ribbon-sm d-inline-block text-center w-50 position-relative'>État Major
 									<?php if ($nb_compagnie_attente_em) {?>
 										<span class='position-absolute top-0 start-100 translate-middle badge rounded-pill p-2 bg-danger border border-light rounded-circle'><span class="visually-hidden">Compagnies en attente</span></span>
 									<?php	}?>
@@ -2863,7 +2727,7 @@ if($dispo == '1' || $admin){
 						<li class="nav-item my-2 dropdown">
 							<a class="dropdown-toggle btn btn-lg btn-info w-100" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 me-1 align-text-top">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+									<path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
 								</svg>
 								Aide
 							</a>
@@ -2872,20 +2736,15 @@ if($dispo == '1' || $admin){
 								<li><a class="dropdown-item" href="?action=faq">FAQ</a></li>
 								<li><a class="dropdown-item" href="question_anim.php">Questions aux anims</a></li>
 								<li><hr class="dropdown-divider"></li>
-								<li><a class="dropdown-item" href="https://discord.gg/EMqRMzHKjZ">DISCORD du jeu</a></li>
+								<li><a class="dropdown-item" href="https://discord.gg/JTYKxfdJ6B">DISCORD du jeu</a></li>
 							</ul>
 						</li>
 						<li class="nav-item my-2 dropdown">
-							<a class="dropdown-toggle btn btn-lg btn-primary w-100" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 me-1 align-text-top">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
-								</svg>
-								Communauté
+							<a class="btn btn-lg w-100 fw-semibold text-light" href="https://discord.gg/JTYKxfdJ6B" style='background:#5865F2'>
+								<img class="img-fluid size-8" src="../public/img/icons/Discord-Symbol-White.png" alt="Discord">
+								DISCORD du jeu
 							</a>
-							<ul class="dropdown-menu w-100">
-								<li><a class="dropdown-item disabled" href="#" disabled>Forum</a></li>
-								<li><a class="dropdown-item" href="https://discord.gg/EMqRMzHKjZ">DISCORD du jeu</a></li>
-							</ul>
+							
 						</li>
 						<li class="nav-item my-2 d-none">
 							<a class='btn btn-lg btn-primary w-100' href="capture.php">Déclarer une capture</a>
@@ -2898,10 +2757,15 @@ if($dispo == '1' || $admin){
 								<?php endif; ?>
 							</a>
 						</li>
-						<?php if(redac_perso($mysqli, $id_perso) || anim_perso($mysqli, $id_perso) || $admin): ?>
+						<?php if(redac_perso($mysqli, $id_perso) || $user->animateur || $admin): ?>
 						<li class="nav-item dropdown my-2">
 							<a class="dropdown-toggle btn btn-lg btn-warning w-100" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 							Administration
+							<?php if ($nb_demande_a_traiter > 0 ): ?>
+									<span class='badge text-bg-danger'>
+										?
+									</span>
+							<?php endif; ?>
 							</a>
 							<ul class="dropdown-menu w-100">
 								<?php // Redacteur
@@ -2911,12 +2775,12 @@ if($dispo == '1' || $admin){
 								</li>
 								<?php endif; ?>
 								<?php // Animation
-								if(anim_perso($mysqli, $id_perso)):?>
+								if($user->animateur):?>
 									<li class="nav-item">
 										<a class='dropdown-item' href='animation.php'>
 											Animation
 											<?php if ($nb_demande_a_traiter > 0): ?>
-												<span class='badge badge-danger' title='<?=$nb_demande_a_traiter?> demandes en attente'>
+											<span class='badge text-bg-danger' title='<?=$nb_demande_a_traiter?> demandes en attente'>
 													<?= $nb_demande_a_traiter?>
 												</span>
 											<?php endif; ?>
@@ -3019,15 +2883,15 @@ if($dispo == '1' || $admin){
 			</nav>
 		</header>
 		<main class='container-fluid main-page overflow-scroll'>
-			<div class="row">
+			<div class="row flex-nowrap">
 				<!-- interface joueur -->
-				<div class='col-12 col-md-6 col-lg-2 bg-body-tertiary bg-main p-3'>
+				<div class='col-12 col-md-6 col-lg-3 col-xl-2 bg-body-tertiary bg-main p-3'>
 					<div class='row'>
 						<div class='col-2'>
 							<div class="position-relative icon-character">
-								<button type="button" class="btn btn-sm btn-secondary position-absolute top-0 start-100 translate-middle p-0 rounded-circle" data-bs-toggle="collapse" data-bs-target="#collapseInfoCharac" aria-expanded="false" aria-controls="collapseInfoCharac">
+								<button type="button" class="btn btn-sm btn-primary position-absolute top-0 start-100 translate-middle p-0 rounded-circle" data-bs-toggle="collapse" data-bs-target="#collapseInfoCharac" aria-expanded="false" aria-controls="collapseInfoCharac">
 									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+										<path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
 									</svg>
 								</button>
 								<span class='fw-bold position-absolute top-50 ms-1'><?= $id_perso ?></span>
@@ -3035,8 +2899,8 @@ if($dispo == '1' || $admin){
 							</div>
 						</div>
 						<form class='col' method='post' action='index.php'>
-							<span class="fw-semibold">Nom : </span>
-							<select name='liste_perso' onchange="this.form.submit()">
+							<label class="fw-semibold form-label visually-hidden" for="liste_perso">Nom : </label>
+							<select class='form-select' id='liste_perso' name='liste_perso' onchange="this.form.submit()">
 							<?php foreach($battalion as $t_liste_perso):
 
 								$id_perso_liste 	= $t_liste_perso["id_perso"];
@@ -3050,10 +2914,10 @@ if($dispo == '1' || $admin){
 								</option>
 							<?php endforeach;?>
 							</select>
-							<input type='submit' name='select_perso' value='ok' />
+							
 						</form>
 					</div>
-					<div class="collapse" id="collapseInfoCharac">
+					<div class="row pt-2 collapse" id="collapseInfoCharac">
 						<div class='col-12'>
 
 							<span class='fw-semibold'>Grade : </span>
@@ -3082,40 +2946,38 @@ if($dispo == '1' || $admin){
 					</div>
 					<div class='row'>
 						<?php
-                        // --- Condition changement couleur texte % Points de Vie (PV) ---
-                        $pourcentage_pv = ($pvMax_perso > 0) ? round($pv_perso / $pvMax_perso * 100) : 0;
-                        // Si PV <= 40%, texte noir, sinon blanc
-                        $style_texte_pv = ($pourcentage_pv <= 40) ? "text-dark fw-bold" : "text-white";
+							$percents_PV = ($pvMax_perso > 0) ? round($pv_perso/$pvMax_perso*100):0;
+							$percents_PM = ($pmMax_perso > 0) ? round($pm_perso/$pmMax_perso*100):0;
+							$percents_PA = ($paMax_final_perso > 0) ? round($pa_perso/$paMax_final_perso*100):0;
+							
+							$percents_PV_style = ($percents_PV<40) ? ' text-success-emphasis ps-2':'';
+							$percents_PM_style = ($percents_PM<50) ? ' text-primary-emphasis ps-2':'';
+							$percents_PA_style = ($percents_PA<50) ? ' ps-2':'';
+						?>
 
-                        // --- Condition changement couleur texte % Points de Mouvement (PM) ---
-                        $pourcentage_pm = ($pmMax_perso > 0) ? round($pm_perso / $pmMax_perso * 100) : 0;
-                        // Si PM <= 40%, texte noir, sinon blanc
-                        $style_texte_pm = ($pourcentage_pm <= 40) ? "text-dark fw-bold" : "text-white";
-                        ?>
-
-                        <div class='col-12 mt-2'>
-                            <div class="progress shadow" role="progressbar" aria-label="points de vie" aria-valuenow="<?= $pv_perso ?>" aria-valuemin="0" aria-valuemax="<?= $pvMax_perso ?>" style="height: 2rem">
-                                <div class="progress-bar text-bg-success fs-6 overflow-visible <?= $style_texte_pv ?>"
-                                     style="width: <?= $pourcentage_pv ?>%">
-                                     PV : <?= $pourcentage_pv ?>% (<?= $pv_perso ?>/<?= $pvMax_perso ?>)
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class='col-6 mt-2'>
-                            <div class="progress shadow" role="progressbar" aria-label="points de mouvement" aria-valuenow="<?= $pm_perso ?>" aria-valuemin="0" aria-valuemax="<?= $pmMax_perso ?>" style="height: 2rem">
-                                <div class="progress-bar progress-bar-striped text-bg-primary fs-6 overflow-visible <?= $style_texte_pm ?>"
-                                     style="width: <?= $pourcentage_pm ?>%">
-                                     PM : <?= $pm_perso ?>/<?= $pmMax_perso ?>
-                                </div>
-                            </div>
-                        </div>
-						<div class='col-6 mt-2'>
-							<div class="progress shadow" role="progressbar" aria-label="points d'action" aria-valuenow="<?=$pa_perso?>" aria-valuemin="0" aria-valuemax="<?= $paMax_final_perso?>" style="height: 2rem">
-								<div class="progress-bar progress-bar-striped text-bg-warning fs-6 overflow-visible" style="width: <?= round($pa_perso/$paMax_final_perso*100)?>%">PA : <?=$pa_perso?>/<?=$paMax_final_perso?></div>
+                            <div class='col-12 mt-2'>
+                                <div class="progress bg-success-subtle shadow" role="progressbar" aria-label="points de vie" aria-valuenow="<?=$pv_perso?>" aria-valuemin="0" aria-valuemax="<?=$pvMax_perso?>" style="height: 2rem">
+    								<div class="progress-bar progress-bar-striped text-bg-success fw-semibold fs-6 overflow-visible<?= $percents_PV_style?>" style="width: <?= $percents_PV ?>%">
+    									PV : <?= $percents_PV ?>% (<?=$pv_perso?>/<?=$pvMax_perso?>)
+    								</div>
+    							</div>
+    						</div>
+									
+    						<div class='col-6 mt-2'>
+    							<div class="progress bg-primary-subtle shadow" role="progressbar" aria-label="points de mouvement" aria-valuenow="<?=$pm_perso?>" aria-valuemin="0" aria-valuemax="<?=$pmMax_perso?>" style="height: 2rem">
+    								<div class="progress-bar progress-bar-striped text-bg-primary fw-semibold fs-6 overflow-visible<?= $percents_PM_style?>" style="width: <?= $percents_PM ?>%">
+    									PM : <?= $percents_PM ?>% (<?=$pm_perso?>/<?=$pmMax_perso?>)
+    								</div>
+    							</div>
 							</div>
-						</div>
-					</div>
+        						<div class='col-6 mt-2'>
+        							<div class="progress bg-danger-subtle shadow" role="progressbar" aria-label="points d'action" aria-valuenow="<?=$pa_perso?>" aria-valuemin="0" aria-valuemax="<?= $paMax_final_perso?>" style="height: 2rem">
+        								<div class="progress-bar progress-bar-striped text-warning-emphasis text-bg-warning fw-semibold fs-6 overflow-visible<?= $percents_PA_style?>" style="width: <?= round($pa_perso/$paMax_final_perso*100)?>%">PA : <?=$pa_perso?>/<?=$paMax_final_perso?></div>
+        							</div>
+        						</div>
+        					
+
+                    </div>
                     <br />
                     <div class="game-status-banner">
                                 <div class="cycle-icon-container">
@@ -3318,7 +3180,7 @@ if($dispo == '1' || $admin){
 													<option value="personne">Qui ?</option>
 													<?php
 													if ($combat_type == 'heal') {
-														while($t_cible_portee_cac = $res_portee_cac->fetch_assoc()) {
+														foreach($targets_cac as $t_cible_portee_cac){
 
 															$id_cible_cac = $t_cible_portee_cac["idPerso_carte"];
 
@@ -3373,7 +3235,7 @@ if($dispo == '1' || $admin){
 														// Impossible d'attaquer au CaC quand on est dans un train
 														if (!in_train($mysqli, $id_perso)) {
 
-															while($t_cible_portee_cac = $res_portee_cac->fetch_assoc()) {
+															foreach($targets_cac as $t_cible_portee_cac){
 
 																$id_cible_cac = $t_cible_portee_cac["idPerso_carte"];
 
@@ -3478,7 +3340,7 @@ if($dispo == '1' || $admin){
 													<option value="personne">Qui ?</option>
 													<?php
 													if (!isset($id_bat_perso) || (isset($id_bat_perso) && $id_bat_perso != 10)) {
-														while($t_cible_portee_dist = $res_portee_dist->fetch_assoc()) {
+														foreach($targets_dist as $t_cible_portee_dist){
 
 															$id_cible_dist = $t_cible_portee_dist["idPerso_carte"];
 															$id_instance_in_bat = in_bat($mysqli,$id_perso);
@@ -3585,8 +3447,8 @@ if($dispo == '1' || $admin){
 												<select name='id_attaque_cac2'>
 													<option value="personne">Qui ?</option>
 													<?php 
-													$res_portee_cac2 = resource_liste_cibles_a_portee_attaque($mysqli, 'carte', $id_perso, $porteeMin_arme_cac, $porteeMax_arme_cac, $perc_att, 'cac');
-													while($t_cible_portee_cac = $res_portee_cac2->fetch_assoc()) {
+													
+													foreach($targets_cac as $t_cible_portee_cac){
 
 														$id_cible_cac = $t_cible_portee_cac["idPerso_carte"];
 
@@ -3773,7 +3635,7 @@ if($dispo == '1' || $admin){
 								</div>
 							</div>
 							<div class='col-12'>
-								<!-- Actions de combat -->
+								<!-- Actions de combat petits écrans -->
 								<button class="btn btn-primary w-100 mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCombatActions" aria-expanded="false" aria-controls="collapseCombatActions">
 									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672 13.684 16.6m0 0-2.51 2.225.569-9.47 5.227 7.917-3.286-.672ZM12 2.25V4.5m5.834.166-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243-1.59-1.59" />
@@ -3839,7 +3701,7 @@ if($dispo == '1' || $admin){
 																<option value="personne">Qui ?</option>
 																<?php
 																if ($combat_type == 'heal') {
-																	while($t_cible_portee_cac = $res_portee_cac->fetch_assoc()) {
+																	foreach($targets_dist as $t_cible_portee_dist){
 
 																		$id_cible_cac = $t_cible_portee_cac["idPerso_carte"];
 
@@ -3894,7 +3756,7 @@ if($dispo == '1' || $admin){
 																	// Impossible d'attaquer au CaC quand on est dans un train
 																	if (!in_train($mysqli, $id_perso)) {
 
-																		while($t_cible_portee_cac = $res_portee_cac->fetch_assoc()) {
+																		foreach($targets_cac as $t_cible_portee_cac){
 
 																			$id_cible_cac = $t_cible_portee_cac["idPerso_carte"];
 
@@ -3999,7 +3861,7 @@ if($dispo == '1' || $admin){
 																<option value="personne">Qui ?</option>
 																<?php
 																if (!isset($id_bat_perso) || (isset($id_bat_perso) && $id_bat_perso != 10)) {
-																	while($t_cible_portee_dist = $res_portee_dist->fetch_assoc()) {
+																	foreach($targets_dist as $t_cible_portee_dist){
 
 																		$id_cible_dist = $t_cible_portee_dist["idPerso_carte"];
 																		$id_instance_in_bat = in_bat($mysqli,$id_perso);
@@ -4106,9 +3968,7 @@ if($dispo == '1' || $admin){
 															<select name='id_attaque_cac2'>
 																<option value="personne">Qui ?</option>
 																<?php 
-																$res_portee_cac2 = resource_liste_cibles_a_portee_attaque($mysqli, 'carte', $id_perso, $porteeMin_arme_cac, $porteeMax_arme_cac, $perc_att, 'cac');
-																while($t_cible_portee_cac = $res_portee_cac2->fetch_assoc()) {
-
+																foreach($targets_cac as $t_cible_portee_cac){
 																	$id_cible_cac = $t_cible_portee_cac["idPerso_carte"];
 
 																	if ($id_cible_cac < 50000) {
@@ -4359,7 +4219,7 @@ if($dispo == '1' || $admin){
 						</div>
 					</div>
 				</div>
-				<div class='col col-md-6 col-lg-10'>
+				<<div class='col col-md-6 col-lg-9 col-xl-10'>
 					<?php if (!empty($itemsOnMap)):?>
 					<div class='row bg-body-tertiary bg-main'>
 						<div class='col-6 m-auto mt-2'>
@@ -4827,11 +4687,35 @@ if($dispo == '1' || $admin){
 																	//--- Div matricule perso
 																	echo "		<div tabindex='0' data-bs-toggle='popover' data-bs-trigger='focus' data-bs-html='true' data-bs-placement='bottom' style=\"position: absolute;bottom: -2px;text-align: center; width: 100%;font-weight: bold;\" ";
 																	// Title popover
-																	echo "			title=\"<div><img src='../images/".$image_profil."' width='40' height='40'><img alt='".$nom_grade_ennemi."' title='".$nom_grade_ennemi."' src='../images/grades/" . $id_grade_ennemi . ".gif' width='20' height='20'> <a href='evenement.php?infoid=".$id_ennemi."' target='_blank'>".$nom_ennemi." [".$id_ennemi."]</a></div><div><a href='compagnie.php?id_compagnie=".$id_compagnie."&voir_compagnie=ok' target='_blank'>";
-																	if (trim($image_compagnie) != "" && $image_compagnie != "0") {
-																		echo "<img src='".$image_compagnie."' width='40' height='40'>";
-																	}
-																	echo " ".stripslashes($nom_compagnie)."</a></div>";
+echo " title=\"<div style='display: flex; align-items: center; gap: 15px;'>"; // Conteneur Flex
+
+// --- 1. L'AVATAR À GAUCHE ---
+if (trim($image_profil) != "") {
+    echo "<div style='flex-shrink: 0;'>";
+    echo "  <img src='../images/".$image_profil."' width='150' height='150' style='border: 2px solid #b38b6d; border-radius: 5px; object-fit: cover;'>";
+    echo "</div>";
+}
+
+// --- 2. LES INFOS À DROITE ---
+echo "<div style='text-align: left;'>"; // On aligne le texte à gauche à côté de l'image
+
+    // Grade et Nom
+    echo "<div>";
+    echo "  <img alt='".$nom_grade_ennemi."' title='".$nom_grade_ennemi."' src='../images/grades/" . $id_grade_ennemi . ".gif' width='20' height='20'>";
+    echo "  <a href='evenement.php?infoid=".$id_ennemi."' target='_blank' style='font-weight:bold;'> ".$nom_ennemi." [".$id_ennemi."]</a>";
+    echo "</div>";
+
+    // Compagnie (Drapeau)
+    echo "<div style='margin-top: 5px;'>";
+    echo "  <a href='compagnie.php?id_compagnie=".$id_compagnie."&voir_compagnie=ok' target='_blank'>";
+    if (trim($image_compagnie) != "" && $image_compagnie != "0") {
+        echo "<img src='".$image_compagnie."' width='40' height='40' style='vertical-align: middle;'> ";
+    }
+    echo stripslashes($nom_compagnie)."</a>";
+    echo "</div>";
+
+echo "</div>"; // Fin du bloc de droite
+echo "</div>"; // Fin du conteneur Flex
 																	if ($nom_terrain == "Pont") {
 
 																		$sql_p = "SELECT id_instanceBat FROM instance_batiment WHERE x_instance='$x' AND y_instance='$y'";

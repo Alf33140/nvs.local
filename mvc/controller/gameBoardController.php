@@ -2,6 +2,7 @@
 require_once("../mvc/model/User.php");
 require_once("../mvc/model/Map.php");
 require_once("../mvc/model/Character.php");
+require_once("../mvc/model/Company.php");
 require_once("../mvc/model/Building.php");
 require_once("../mvc/model/Vehicle.php");
 require_once("../mvc/model/GameLog.php");
@@ -17,6 +18,9 @@ class GameboardController extends Controller
      */
     public function index()
     {
+		date_default_timezone_set('Europe/Paris');
+		$date_serveur = new DateTime('now');
+		
 		$dateTime = new DateTime();
 		$now = (clone $dateTime)->format('Y-m-d H:i:s');
 		
@@ -72,11 +76,31 @@ class GameboardController extends Controller
 				die();
 			}
 		}
-		
+			
+		// affichage des demandes pour les animateurs
+		if($user->animateur){
+			$companiesDemands = new Company();
+			$countCompaniesDemands = $companiesDemands->companiesDemands($user->camp);
+			$countCompaniesDemands = $countCompaniesDemands[0];
+			
+			$charactersModel = new Character();
+			$countCharactersDemands = $charactersModel->charactersDemands($user->camp);
+			$countCharactersDemands = $countCharactersDemands[0];
+			
+			$countCharactersQuestions = $charactersModel->charactersQuestions($user->camp);
+			$countCharactersQuestions = $countCharactersQuestions[0];
+			
+			$countRpCaptures = $charactersModel->rpCaptures();
+			$countRpCaptures = $countRpCaptures[0];
+			
+			$nb_demande_a_traiter = $countCompaniesDemands + $countCharactersDemands + $countCharactersQuestions + $countRpCaptures;
+		}
+
 		// perso selectionné
 		if(isset($_POST["liste_perso"]) && $_POST["liste_perso"] != "") {
 			$_SESSION['id_perso'] = $_POST["liste_perso"];
 			header("Location:?");
+			die();
 		}
 		
 		$selected_Character = new Character();
@@ -106,6 +130,7 @@ class GameboardController extends Controller
 			session_destroy(); // On détruit la session
 		
 			header("Location:../index.php");
+			die();
 		}
 		
 		// on vérifie que le perso n'est pas désactivé
@@ -189,5 +214,6 @@ class GameboardController extends Controller
 		// gestion de l'affichage pour les missions, la messagerie
 
 		require_once('jouer_BR.php');
+		// return require_once('../mvc/view/gameboard/index.php');
     }
 }

@@ -176,7 +176,22 @@ class Company extends Model
 			
 		return $request;
 	}
-	
+	/**
+     * Récupération des demandes anim liées aux compagnies
+     * @param $camp int
+     * @return array
+     */
+	public function companiesDemands(int $camp){
+		
+		$query = 'SELECT COUNT(id) nb_demands FROM compagnie_demande_anim, compagnies
+				WHERE compagnie_demande_anim.id_compagnie = compagnies.id_compagnie AND compagnies.id_clan=?';
+		$values = [$camp];
+
+		$request = $this->request($query,$values);
+		$result = $request->fetch();
+			
+		return $result;
+	}
 	// ------- fonctions spéciales pour l'EM ------- //
 	
 	/**

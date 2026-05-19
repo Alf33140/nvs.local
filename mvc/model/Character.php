@@ -26,6 +26,54 @@ class Character extends Model
 	}
 	
 	/**
+     * Récupération des demandes anim liées aux persos
+     * @param $camp int
+     * @return array
+     */
+	public function charactersDemands(int $camp){
+		
+		$query = 'SELECT COUNT(id) nb_demands FROM perso_demande_anim, perso
+				WHERE perso_demande_anim.id_perso = perso.id_perso AND perso.clan = ?';
+		$values = [$camp];
+
+		$request = $this->request($query,$values);
+		$result = $request->fetch();
+			
+		return $result;
+	}
+
+	/**
+     * Récupération des questions anim liées aux persos
+     * @param $camp int
+     * @return array
+     */
+	public function charactersQuestions(int $camp){
+		$query = 'SELECT COUNT(id) nb_demands FROM anim_question
+				WHERE id_camp = ? AND status=0';
+		$values = [$camp];
+
+		$request = $this->request($query,$values);
+		$result = $request->fetch();
+			
+		return $result;
+	}
+	
+	/**
+     * Récupération des demandes de capture RP
+     * @param $camp int
+     * @return array
+     */
+	public function rpCaptures(){
+		$query = 'SELECT COUNT(id) nb_demands FROM anim_capture
+				WHERE statut=?';
+		$values = [0];
+
+		$request = $this->request($query,$values);
+		$result = $request->fetch();
+			
+		return $result;
+	}
+	/**
    * fonction pivot pour savoir si un perso est dans un bâtiment
    * @var charac_id (int) id du perso
    * @return array

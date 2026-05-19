@@ -504,18 +504,78 @@ ol.list-group > li:nth-of-type(odd) {
 
 .cat-title{
 	/* border : 3px groove rgba(159,117,42,1); */
-	border : 3px groove rgba(180,150,0,1);
+	border : 3px double rgba(180,150,0,1);
 	border-radius: 7px;
 	background: #382910;
-	background: linear-gradient(180deg,rgba(56, 41, 16, 1) 0%, rgba(95, 0, 0, 1) 30%, rgba(95, 0, 0, 1) 70%, rgba(56, 41, 16, 1) 100%);
+	background:#4a0200 center url("../img/backgrounds/dark-stripes-light.png");
 	color:#fff;
 	padding: 0.1rem 0.4rem;
-	font-size:1rem !important;
+	font-size:0.9rem !important;
 	vertical-align: middle;
 	font-family: "Times", "Times New Roman", "Georgia", serif;
 	/* font-variant-caps: all-small-caps; */
 	letter-spacing: 2px;
 	box-shadow: 0 1px 5px rgba(0,0,0,0.8);
+}
+
+/* titres personnalisés */
+
+.title-ribbon {
+	color:#fff;
+	letter-spacing: 2px;
+	font-size:1rem !important;
+	vertical-align: middle;
+	font-family: "Times", "Times New Roman", "Georgia", serif;
+	border : 3px double rgba(180,150,0,1);
+	position: relative;
+	margin: 0 auto 20px;
+	padding: 5px 20px;
+	text-align: center;
+	background:#4a0200 center url("../img/backgrounds/dark-stripes-light.png");
+	box-shadow: 0 3px 10px rgba(0,0,0,0.8);
+}
+
+.title-ribbon::before, .title-ribbon::after {
+	/* position des bords du ruban */
+	content: '';
+	width: 80px;
+	height: 100%;
+	background:#300200 center url("../img/backgrounds/dark-stripes-light.png");
+	border : 3px double rgba(180,150,0,1);
+	position: absolute;
+	z-index: -1;
+	top: 15px;
+	box-shadow: 0 1px 5px rgba(0,0,0,0.8);
+	/* fin du ruban */
+	clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 25% 50%);
+}
+
+.title-ribbon::before {
+	left: -60px;
+}
+
+.title-ribbon::after {
+	right: -60px;
+	transform: scaleX(-1); /* flip horizontal */
+}
+
+
+.title-ribbon-sm{
+	padding: 5px 10px;
+}
+
+.title-ribbon-sm::before, .title-ribbon-sm::after{
+	width: 40px;
+	top: 13px;
+}
+
+.title-ribbon-sm::before {
+	left: -26px;
+}
+
+.title-ribbon-sm::after {
+	right: -26px;
+	transform: scaleX(-1); /* flip horizontal */
 }
 
 .main-menu-button:hover{
